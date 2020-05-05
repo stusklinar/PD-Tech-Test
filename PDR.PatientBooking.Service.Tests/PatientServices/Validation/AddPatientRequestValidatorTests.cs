@@ -1,5 +1,4 @@
-﻿using System;
-using AutoFixture;
+﻿using AutoFixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
@@ -7,6 +6,7 @@ using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Data.Models;
 using PDR.PatientBooking.Service.PatientServices.Requests;
 using PDR.PatientBooking.Service.PatientServices.Validation;
+using System;
 
 namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
 {
@@ -45,14 +45,26 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
 
         }
 
+        [Test]
+        public void ValidateRequest_AllChecksPass_ReturnsPassedValidationResult()
+        {
+            //arrange
+            var request = GetValidRequest();
+
+            //act
+            var res = _addPatientRequestValidator.ValidateRequest(request);
+
+            //assert
+            res.PassedValidation.Should().BeTrue();
+        }
+
         [TestCase("")]
         [TestCase(null)]
         public void ValidateRequest_FirstNameNullOrEmpty_ReturnsFailedValidationResult(string firstName)
         {
             //arrange
-            var request = _fixture.Build<AddPatientRequest>()
-                .With(x => x.FirstName, firstName)
-                .Create();
+            var request = GetValidRequest();
+            request.FirstName = firstName;
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -67,9 +79,8 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         public void ValidateRequest_LastNameNullOrEmpty_ReturnsFailedValidationResult(string lastName)
         {
             //arrange
-            var request = _fixture.Build<AddPatientRequest>()
-                .With(x => x.LastName, lastName)
-                .Create();
+            var request = GetValidRequest();
+            request.LastName = lastName;
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -84,9 +95,8 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         public void ValidateRequest_EmailNullOrEmpty_ReturnsFailedValidationResult(string email)
         {
             //arrange
-            var request = _fixture.Build<AddPatientRequest>()
-                .With(x => x.Email, email)
-                .Create();
+            var request = GetValidRequest();
+            request.Email = email;
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -100,13 +110,15 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         public void ValidateRequest_PatientWithEmailAddressAlreadyExists_ReturnsFailedValidationResult()
         {
             //arrange
-            var existingPatient = _fixture.Create<Patient>();
+            var request = GetValidRequest();
+
+            var existingPatient = _fixture
+                .Build<Patient>()
+                .With(x => x.Email, request.Email)
+                .Create();
+
             _context.Add(existingPatient);
             _context.SaveChanges();
-
-            var request = _fixture.Build<AddPatientRequest>()
-                .With(x => x.Email, existingPatient.Email)
-                .Create();
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(request);
@@ -120,6 +132,8 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         public void ValidateRequest_ClinicDoesNotExist_ReturnsFailedValidationResult()
         {
             //arrange
+            var request = GetValidRequest();
+            request.ClinicId++; //offset clinicId
 
             //act
             var res = _addPatientRequestValidator.ValidateRequest(_fixture.Create<AddPatientRequest>());
@@ -129,10 +143,8 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             res.Errors.Should().Contain("A clinic with that ID could not be found");
         }
 
-        [Test]
-        public void ValidateRequest_AllChecksPass_ReturnsPassedValidationResult()
+        private AddPatientRequest GetValidRequest()
         {
-            //arrange
             var clinic = _fixture.Create<Clinic>();
             _context.Clinic.Add(clinic);
             _context.SaveChanges();
@@ -140,12 +152,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             var request = _fixture.Build<AddPatientRequest>()
                 .With(x => x.ClinicId, clinic.Id)
                 .Create();
-
-            //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
-
-            //assert
-            res.PassedValidation.Should().BeTrue();
+            return request;
         }
     }
 }
