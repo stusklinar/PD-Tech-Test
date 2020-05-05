@@ -124,7 +124,8 @@ namespace PDR.PatientBooking.Data.DataSeed
                     Email = "DrMg@docworld.com",
                     FirstName = "Mac",
                     LastName = "Guffin",
-                    Gender = 1
+                    Gender = 1,
+                    Created = DateTime.UtcNow
                 },
                 new Doctor()
                 {
@@ -133,7 +134,8 @@ namespace PDR.PatientBooking.Data.DataSeed
                     Email = "DrBlop@docworld.com",
                     FirstName = "Betty",
                     LastName = "Blop",
-                    Gender = 0
+                    Gender = 0,
+                    Created = DateTime.UtcNow
                 },
                 new Doctor()
                 {
@@ -142,7 +144,8 @@ namespace PDR.PatientBooking.Data.DataSeed
                     Email = "L33tFoosBallPlayer69@docworld.com",
                     FirstName = "Lindsay",
                     LastName = "Mcowat",
-                    Gender = 0
+                    Gender = 0,
+                    Created = DateTime.UtcNow
                 }
             };
 
