@@ -38,7 +38,8 @@ namespace PDR.PatientBooking.Service.PatientServices
                 Gender = (int)request.Gender,
                 Email = request.Email,
                 DateOfBirth = request.DateOfBirth,
-                Orders = new List<Order>()
+                Orders = new List<Order>(),
+                ClinicId = request.ClinicId
             });
 
             _context.SaveChanges();
@@ -48,7 +49,6 @@ namespace PDR.PatientBooking.Service.PatientServices
         {
             var patients = _context
                 .Patient
-                .AsNoTracking()
                 .Select(x => new GetAllPatientsResponse.Patient
                 {
                     Id = x.Id,
