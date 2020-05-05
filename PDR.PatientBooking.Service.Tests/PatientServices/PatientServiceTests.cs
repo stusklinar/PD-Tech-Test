@@ -36,7 +36,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
             _mockRepository = new MockRepository(MockBehavior.Strict);
             _fixture = new Fixture();
 
-            //Prevent fixture from generating circular references
+            //Prevent fixture from generating from entity circular references
             _fixture.Behaviors.Add(new OmitOnRecursionBehavior(1));
 
             // Mock setup
