@@ -4,20 +4,20 @@ using Microsoft.EntityFrameworkCore;
 using NUnit.Framework;
 using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Data.Models;
-using PDR.PatientBooking.Service.PatientServices.Requests;
-using PDR.PatientBooking.Service.PatientServices.Validation;
+using PDR.PatientBooking.Service.DoctorServices.Requests;
+using PDR.PatientBooking.Service.DoctorServices.Validation;
 using System;
 
-namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
+namespace PDR.PatientBooking.Service.Tests.DoctorServices.Validation
 {
     [TestFixture]
-    public class AddPatientRequestValidatorTests
+    public class AddDoctorRequestValidatorTests
     {
         private IFixture _fixture;
 
         private PatientBookingContext _context;
 
-        private AddPatientRequestValidator _addPatientRequestValidator;
+        private AddDoctorRequestValidator _addDoctorRequestValidator;
 
         [SetUp]
         public void SetUp()
@@ -35,7 +35,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             SetupMockDefaults();
 
             // Sut instantiation
-            _addPatientRequestValidator = new AddPatientRequestValidator(
+            _addDoctorRequestValidator = new AddDoctorRequestValidator(
                 _context
             );
         }
@@ -52,7 +52,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             var request = GetValidRequest();
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeTrue();
@@ -67,7 +67,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             request.FirstName = firstName;
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeFalse();
@@ -83,7 +83,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             request.LastName = lastName;
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeFalse();
@@ -99,7 +99,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             request.Email = email;
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeFalse();
@@ -118,7 +118,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             request.Email = email;
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeFalse();
@@ -147,57 +147,37 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             request.Email = email;
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeTrue();
         }
 
         [Test]
-        public void ValidateRequest_PatientWithEmailAddressAlreadyExists_ReturnsFailedValidationResult()
+        public void ValidateRequest_DoctorWithEmailAddressAlreadyExists_ReturnsFailedValidationResult()
         {
             //arrange
             var request = GetValidRequest();
 
-            var existingPatient = _fixture
-                .Build<Patient>()
+            var existingDoctor = _fixture
+                .Build<Doctor>()
                 .With(x => x.Email, request.Email)
                 .Create();
 
-            _context.Add(existingPatient);
+            _context.Add(existingDoctor);
             _context.SaveChanges();
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(request);
+            var res = _addDoctorRequestValidator.ValidateRequest(request);
 
             //assert
             res.PassedValidation.Should().BeFalse();
-            res.Errors.Should().Contain("A patient with that email address already exists");
+            res.Errors.Should().Contain("A doctor with that email address already exists");
         }
 
-        [Test]
-        public void ValidateRequest_ClinicDoesNotExist_ReturnsFailedValidationResult()
+        private AddDoctorRequest GetValidRequest()
         {
-            //arrange
-            var request = GetValidRequest();
-            request.ClinicId++; //offset clinicId
-
-            //act
-            var res = _addPatientRequestValidator.ValidateRequest(_fixture.Create<AddPatientRequest>());
-
-            //assert
-            res.PassedValidation.Should().BeFalse();
-            res.Errors.Should().Contain("A clinic with that ID could not be found");
-        }
-
-        private AddPatientRequest GetValidRequest()
-        {
-            var clinic = _fixture.Create<Clinic>();
-            _context.Clinic.Add(clinic);
-            _context.SaveChanges();
-
-            var request = _fixture.Build<AddPatientRequest>()
-                .With(x => x.ClinicId, clinic.Id)
+            var request = _fixture.Build<AddDoctorRequest>()
                 .With(x => x.Email, "user@domain.com")
                 .Create();
             return request;
