@@ -102,6 +102,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
                 ClinicId = request.ClinicId,
+                Created = DateTime.UtcNow
             };
 
             //act
