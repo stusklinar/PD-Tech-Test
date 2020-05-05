@@ -96,6 +96,55 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             res.Errors.Should().Contain("Email must be populated");
         }
 
+        [TestCase("user@")]
+        [TestCase("@")]
+        [TestCase("user")]
+        [TestCase(null)]
+        [TestCase("")]
+        public void ValidateRequest_InvalidEmail_ReturnsFailedValidationResult(string email)
+        {
+            //arrange
+            var request = _fixture.Build<AddPatientRequest>()
+                .With(x => x.Email, email)
+                .Create();
+
+            //act
+            var res = _addPatientRequestValidator.ValidateRequest(request);
+
+            //assert
+            res.PassedValidation.Should().BeFalse();
+            res.Errors.Should().Contain("Email must be a valid email address");
+        }
+
+        [TestCase("user@domain.com")]
+        [TestCase("user@domain-domain.com")]
+        [TestCase("user@domain.net")]
+        [TestCase("user@1.net")]
+        [TestCase("user@domain.co.uk")]
+        [TestCase("user.name@domain.com")]
+        [TestCase("user.name@domain-domain.com")]
+        [TestCase("user.name@domain.net")]
+        [TestCase("user.name@1.net")]
+        [TestCase("user.name@domain.co.uk")]
+        [TestCase("user+100@domain.com")]
+        [TestCase("user+100@domain-domain.com")]
+        [TestCase("user+100@domain.net")]
+        [TestCase("user+100@1.net")]
+        [TestCase("user+100@domain.co.uk")]
+        public void ValidateRequest_ValidEmail_ReturnsPassedValidationResult(string email)
+        {
+            //arrange
+            var request = _fixture.Build<AddPatientRequest>()
+                .With(x => x.Email, email)
+                .Create();
+
+            //act
+            var res = _addPatientRequestValidator.ValidateRequest(request);
+
+            //assert
+            res.PassedValidation.Should().BeTrue();
+        }
+
         [Test]
         public void ValidateRequest_PatientWithEmailAddressAlreadyExists_ReturnsFailedValidationResult()
         {
