@@ -18,51 +18,6 @@ namespace PDR.PatientBookingApi.Controllers
             _context = context;
         }
 
-        [HttpGet("doctor/{doctorId}")]
-        public IActionResult GetByDoctorId(long doctorId)
-        {
-            var bookings = _context.Order.ToList();
-
-            var bookings2 = bookings.Where(x => x.DoctorId == doctorId).ToList();
-
-            var bookings3 = new List<MyOrderResult>();
-            for (var i = 0; i < bookings2.Count(); i++)
-            {
-                bookings3.Add(new MyOrderResult());
-                bookings3[i].DoctorId = bookings2[i].DoctorId;
-                bookings3[i].StartTime = bookings2[i].StartTime;
-                bookings3[i].EndTime = bookings2[i].StartTime;
-                bookings3[i].PatientId = bookings2[i].PatientId;
-                bookings3[i].SurgeryType = (int)bookings2[i].GetSurgeryType();
-            }
-
-            var bookings4 = bookings3.OrderBy(x => x.StartTime);
-
-            return Ok(bookings4);
-        }
-
-
-
-        [HttpGet("doctor/{doctorId}/latest")]
-        public IActionResult GetLatestByDoctorId(long doctorId)
-        {
-            var bookings = _context.Order.ToList();
-
-            var bookings2 = bookings.Where(x => x.DoctorId == doctorId).ToList();
-
-            var latestBooking = new MyOrderResult();
-            latestBooking.StartTime = new DateTime(1970, 1, 1);
-
-            for (var i = 0; i < bookings2.Count(); i++)
-            {
-                if (bookings2[i].StartTime > latestBooking.StartTime)
-
-                    latestBooking = UpdateLatestBooking(bookings2, i);
-            }
-
-            return Ok(latestBooking);
-        }
-
         [HttpGet("patient/{identificationNumber}/next")]
         public IActionResult GetPatientNextAppointnemtn(long identificationNumber)
         {
