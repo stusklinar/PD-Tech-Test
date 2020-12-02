@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using PDR.PatientBooking.Data;
+using PDR.PatientBooking.Service.DoctorServices;
+using PDR.PatientBooking.Service.Interfaces;
 using PDR.PatientBooking.Service.IoC;
 
 namespace PDR.PatientBookingApi
@@ -23,6 +25,8 @@ namespace PDR.PatientBookingApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSingleton<IDateTimeProvider, DateTimeProvider>();
+            services.AddTransient<IDoctorService, DoctorService>();
             services.AddDbContext<PatientBookingContext>(options => options
                     .UseInMemoryDatabase(databaseName: "PatientBooking")
                     .UseLazyLoadingProxies()

@@ -35,7 +35,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
         {
             // Boilerplate
             _mockRepository = new MockRepository(MockBehavior.Strict);
-            
+
             _fixture = new Fixture();
 
             //Prevent fixture from generating circular references
@@ -62,7 +62,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             _validator.Setup(x => x.ValidateRequest(It.IsAny<AddDoctorRequest>()))
                 .Returns(new PdrValidationResult(true));
 
-            _dateTimeProvider.Setup(x => x.UtcNow).Returns(new DateTime(1985,10,26));
+            _dateTimeProvider.Setup(x => x.UtcNow).Returns(new DateTime(1985, 10, 26));
         }
 
         [Test]
@@ -159,6 +159,46 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
 
             //assert
             res.Should().BeEquivalentTo(expected);
+        }
+
+        [Test]
+        public void IsDoctorBusyReturnsTrueIfRangeIsBooked()
+        {
+            var now = DateTime.UtcNow;
+            //arrange
+            var order = _fixture
+                .Build<Order>()
+                .With(x => x.StartTime, now)
+                 .With(x => x.EndTime, now.AddMinutes(30))
+                .Create<Order>();
+
+            _context.Order.Add(order);
+
+            _context.SaveChanges();
+
+            //act
+            var res= _doctorService.IsDoctorAvailableDuringRange(order.Doctor, now, now.AddMinutes(30));
+            res.Should().BeTrue();
+        }
+
+        [Test]
+        public void IsDoctorBusyReturnsFalseIfRangeIsAvailable ()
+        {
+            var now = DateTime.UtcNow;
+            //arrange
+            var order = _fixture
+                .Build<Order>()
+                .With(x => x.StartTime, now)
+                 .With(x => x.EndTime, now.AddMinutes(30))
+                .Create<Order>();
+
+            _context.Order.Add(order);
+
+            _context.SaveChanges();
+
+            //act
+            var res = _doctorService.IsDoctorAvailableDuringRange(order.Doctor, now.AddMinutes(30), now.AddMinutes(60));
+            res.Should().BeFalse();
         }
 
         [TearDown]

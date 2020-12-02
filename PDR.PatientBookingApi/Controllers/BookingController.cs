@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Data.Models;
+using PDR.PatientBooking.Service.DoctorServices;
+using PDR.PatientBooking.Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +14,14 @@ namespace PDR.PatientBookingApi.Controllers
     public class BookingController : ControllerBase
     {
         private readonly PatientBookingContext _context;
+        private readonly IDoctorService _doctorService;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public BookingController(PatientBookingContext context)
+        public BookingController(PatientBookingContext context, IDoctorService doctorService, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
+            _doctorService = doctorService;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         [HttpGet("patient/{identificationNumber}/next")]
@@ -51,6 +57,11 @@ namespace PDR.PatientBookingApi.Controllers
         [HttpPost()]
         public IActionResult AddBooking(NewBooking newBooking)
         {
+            if (newBooking.StartTime < _dateTimeProvider.UtcNow)
+            {
+                return BadRequest("Unable to add a booking in the past");
+            }
+
             var bookingId = new Guid();
             var bookingStartTime = newBooking.StartTime;
             var bookingEndTime = newBooking.EndTime;
@@ -71,6 +82,13 @@ namespace PDR.PatientBookingApi.Controllers
                 Doctor = bookingDoctor,
                 SurgeryType = (int)bookingSurgeryType
             };
+
+            var isDoctorBusyDuringTimeRange = _doctorService.IsDoctorAvailableDuringRange(bookingDoctor, newBooking.StartTime, newBooking.EndTime);
+
+            if (isDoctorBusyDuringTimeRange)
+            {
+                return BadRequest("This timeslot is not currently available");
+            }
 
             _context.Order.AddRange(new List<Order> { myBooking });
             _context.SaveChanges();

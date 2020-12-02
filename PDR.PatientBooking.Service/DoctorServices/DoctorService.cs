@@ -69,5 +69,11 @@ namespace PDR.PatientBooking.Service.DoctorServices
                 Doctors = doctors
             };
         }
+
+        public bool IsDoctorAvailableDuringRange(Doctor doc,DateTime startTime, DateTime endTime)
+        {
+            return doc.Orders.Any(x => x.StartTime >= startTime && x.EndTime <= endTime);
+
+        }
     }
 }
