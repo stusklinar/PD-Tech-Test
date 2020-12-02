@@ -7,6 +7,7 @@ namespace PDR.PatientBooking.Data.Models
         public Guid Id { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
+        public bool IsCancelled { get; set; } = false;
         public int SurgeryType { get; set; }
         public virtual long PatientId { get; set; }
         public virtual long DoctorId { get; set; }
