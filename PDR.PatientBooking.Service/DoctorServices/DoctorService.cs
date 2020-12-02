@@ -5,6 +5,7 @@ using PDR.PatientBooking.Service.DoctorServices.Requests;
 using PDR.PatientBooking.Service.DoctorServices.Responses;
 using PDR.PatientBooking.Service.DoctorServices.Validation;
 using PDR.PatientBooking.Service.Enums;
+using PDR.PatientBooking.Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,11 +16,13 @@ namespace PDR.PatientBooking.Service.DoctorServices
     {
         private readonly PatientBookingContext _context;
         private readonly IAddDoctorRequestValidator _validator;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public DoctorService(PatientBookingContext context, IAddDoctorRequestValidator validator)
+        public DoctorService(PatientBookingContext context, IAddDoctorRequestValidator validator, IDateTimeProvider dateTimeProvider)
         {
             _context = context;
             _validator = validator;
+            _dateTimeProvider = dateTimeProvider;
         }
 
         public void AddDoctor(AddDoctorRequest request)
@@ -39,7 +42,7 @@ namespace PDR.PatientBooking.Service.DoctorServices
                 Email = request.Email,
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
-                Created = DateTime.UtcNow
+                Created = _dateTimeProvider.UtcNow
             });
 
             _context.SaveChanges();

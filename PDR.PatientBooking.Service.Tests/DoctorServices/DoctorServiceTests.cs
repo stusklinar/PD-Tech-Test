@@ -10,6 +10,7 @@ using PDR.PatientBooking.Service.DoctorServices.Requests;
 using PDR.PatientBooking.Service.DoctorServices.Responses;
 using PDR.PatientBooking.Service.DoctorServices.Validation;
 using PDR.PatientBooking.Service.Enums;
+using PDR.PatientBooking.Service.Interfaces;
 using PDR.PatientBooking.Service.Validation;
 using System;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
 
         private PatientBookingContext _context;
         private Mock<IAddDoctorRequestValidator> _validator;
+        private Mock<IDateTimeProvider> _dateTimeProvider;
 
         private DoctorService _doctorService;
 
@@ -33,6 +35,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
         {
             // Boilerplate
             _mockRepository = new MockRepository(MockBehavior.Strict);
+            
             _fixture = new Fixture();
 
             //Prevent fixture from generating circular references
@@ -41,6 +44,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             // Mock setup
             _context = new PatientBookingContext(new DbContextOptionsBuilder<PatientBookingContext>().UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
             _validator = _mockRepository.Create<IAddDoctorRequestValidator>();
+            _dateTimeProvider = new Mock<IDateTimeProvider>();
 
             // Mock default
             SetupMockDefaults();
@@ -48,7 +52,8 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             // Sut instantiation
             _doctorService = new DoctorService(
                 _context,
-                _validator.Object
+                _validator.Object,
+                _dateTimeProvider.Object
             );
         }
 
@@ -56,6 +61,8 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
         {
             _validator.Setup(x => x.ValidateRequest(It.IsAny<AddDoctorRequest>()))
                 .Returns(new PdrValidationResult(true));
+
+            _dateTimeProvider.Setup(x => x.UtcNow).Returns(new DateTime(1985,10,26));
         }
 
         [Test]
@@ -94,13 +101,14 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
 
             var expected = new Doctor
             {
+                Id = 1,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Gender = (int)request.Gender,
                 Email = request.Email,
                 DateOfBirth = request.DateOfBirth,
                 Orders = new List<Order>(),
-                Created = DateTime.UtcNow
+                Created = _dateTimeProvider.Object.UtcNow
             };
 
             //act
