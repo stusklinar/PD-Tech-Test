@@ -109,8 +109,6 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
         [TestCase("user@")]
         [TestCase("@")]
         [TestCase("user")]
-        [TestCase(null)]
-        [TestCase("")]
         public void ValidateRequest_InvalidEmail_ReturnsFailedValidationResult(string email)
         {
             //arrange
@@ -181,9 +179,13 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices.Validation
             //arrange
             var request = GetValidRequest();
             request.ClinicId++; //offset clinicId
+            var patientRequest = _fixture.
+                Build<AddPatientRequest>()
+                .With(x => x.Email, request.Email)
+                .Create();
 
             //act
-            var res = _addPatientRequestValidator.ValidateRequest(_fixture.Create<AddPatientRequest>());
+            var res = _addPatientRequestValidator.ValidateRequest(patientRequest);
 
             //assert
             res.PassedValidation.Should().BeFalse();

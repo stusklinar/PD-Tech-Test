@@ -3,6 +3,7 @@ using PDR.PatientBooking.Service.PatientServices.Requests;
 using PDR.PatientBooking.Service.Validation;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace PDR.PatientBooking.Service.PatientServices.Validation
 {
@@ -35,6 +36,7 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
         {
             var errors = new List<string>();
 
+
             if (string.IsNullOrEmpty(request.FirstName))
                 errors.Add("FirstName must be populated");
 
@@ -43,6 +45,10 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
 
             if (string.IsNullOrEmpty(request.Email))
                 errors.Add("Email must be populated");
+            else if (!Regex.IsMatch(request.Email, @"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$"))  // an else, because you can't have no email, and an invalid email
+            {
+                errors.Add("Email must be a valid email address");
+            }
 
             if (errors.Any())
             {
