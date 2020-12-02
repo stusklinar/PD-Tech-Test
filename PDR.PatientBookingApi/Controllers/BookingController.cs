@@ -6,6 +6,7 @@ using PDR.PatientBooking.Service.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 
 namespace PDR.PatientBookingApi.Controllers
 {
@@ -27,31 +28,51 @@ namespace PDR.PatientBookingApi.Controllers
         [HttpGet("patient/{identificationNumber}/next")]
         public IActionResult GetPatientNextAppointment(long identificationNumber)
         {
-            var bockings = _context.Order.OrderBy(x => x.StartTime).ToList();
+            var availableBookings = _context
+                .Order
+                .Where(x => !x.IsCancelled
+                && x.Patient.Id == identificationNumber
+                && x.StartTime > DateTime.Now)
+                .OrderBy(x => x.StartTime).ToList();
 
-            if (bockings.Where(x => x.Patient.Id == identificationNumber).Count() == 0)
+            if (!availableBookings.Any())
             {
                 return StatusCode(502);
             }
-            else
+
+            return Ok(new
             {
-                var bookings2 = bockings.Where(x => x.PatientId == identificationNumber);
-                if (bookings2.Where(x => x.StartTime > DateTime.Now).Count() == 0)
-                {
-                    return StatusCode(502);
-                }
-                else
-                {
-                    var bookings3 = bookings2.Where(x => x.StartTime > DateTime.Now);
-                    return Ok(new
-                    {
-                        bookings3.First().Id,
-                        bookings3.First().DoctorId,
-                        bookings3.First().StartTime,
-                        bookings3.First().EndTime
-                    });
-                }
+                availableBookings.First().Id,
+                availableBookings.First().DoctorId,
+                availableBookings.First().StartTime,
+                availableBookings.First().EndTime
+            });
+        }
+
+        [Route("{bookingId}")]
+        [HttpDelete]
+        public ActionResult CancelAppointment([FromRoute] Guid bookingId)
+        {
+            var order = _context.Order.Find(bookingId);
+
+            if (order == null)
+            {
+                return BadRequest("Unable to find appointment");
             }
+
+            try
+            {
+                order.IsCancelled = true;
+                _context.Order.Update(order);
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(502, "Unable to delete booking");
+            }
+
         }
 
         [HttpPost()]
