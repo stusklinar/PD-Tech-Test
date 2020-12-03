@@ -8,9 +8,4 @@ namespace PDR.PatientBooking.Service.Interfaces
     {
         DateTime UtcNow { get; }
     }
-
-    public class DateTimeProvider : IDateTimeProvider
-    {
-        public DateTime UtcNow => DateTime.UtcNow;
-    }
 }
