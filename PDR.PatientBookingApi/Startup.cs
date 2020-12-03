@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Service.DoctorServices;
+using PDR.PatientBooking.Service.Helpers;
 using PDR.PatientBooking.Service.Interfaces;
 using PDR.PatientBooking.Service.IoC;
 
