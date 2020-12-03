@@ -104,9 +104,9 @@ namespace PDR.PatientBookingApi.Controllers
                 SurgeryType = (int)bookingSurgeryType
             };
 
-            var isDoctorBusyDuringTimeRange = _doctorService.IsDoctorAvailableDuringRange(bookingDoctor, newBooking.StartTime, newBooking.EndTime);
+            var isDoctorAvailableDuringRange = _doctorService.IsDoctorAvailableDuringRange(bookingDoctor, newBooking.StartTime, newBooking.EndTime);
 
-            if (isDoctorBusyDuringTimeRange)
+            if (isDoctorAvailableDuringRange)
             {
                 return BadRequest("This timeslot is not currently available");
             }
